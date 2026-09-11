@@ -1,51 +1,41 @@
 package main
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
-	"net/http"
 )
 
-type location struct {
-	Name string `json:"name"`
-}
-
-type page struct {
-	Results  []location `json:"results"`
-	Next     *string    `json:"next"`
-	Previous *string    `json:"previous"`
-}
-
 func commandMap(cliConfig *config) error {
-	// get 20 locations
 
-	URL := "https://pokeapi.co/api/v2/location-area/"
+	page, err := cliConfig.pokeapiClient.ListLocations(cliConfig.nextURL)
 
-	if cliConfig.nextURL != nil {
-		URL = *cliConfig.nextURL
-	}
-
-	res, err := http.Get(URL)
 	if err != nil { // if the url failed and couldn't find a location area
 		fmt.Println("Error: ", err)
 		return err
 	}
-	defer res.Body.Close()
+	cliConfig.nextURL = page.Next
+	cliConfig.previousURL = page.Previous
+	for _, location := range page.Results {
+		fmt.Println(location.Name)
+	}
+	return nil
+}
 
-	data, err := io.ReadAll(res.Body) // convert the response type to []byte
-	if err != nil {
+func commandMapb(cliConfig *config) error {
+	if cliConfig.previousURL == nil {
+		return errors.New("you're on the first page")
+	}
+
+	// exact same thing as Map, but just going backwards
+	page, err := cliConfig.pokeapiClient.ListLocations(cliConfig.previousURL)
+
+	if err != nil { // if the url failed and couldn't find a location area
 		fmt.Println("Error: ", err)
 		return err
 	}
-
-	current := page{}
-	if err := json.Unmarshal(data, &current); err != nil {
-		return err
-	}
-	cliConfig.nextURL = current.Next
-	cliConfig.previousURL = current.Previous
-	for _, location := range current.Results {
+	cliConfig.nextURL = page.Next
+	cliConfig.previousURL = page.Previous
+	for _, location := range page.Results {
 		fmt.Println(location.Name)
 	}
 	return nil

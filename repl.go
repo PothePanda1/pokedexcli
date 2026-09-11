@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/PoThePanda1/pokedexcli/internal/pokeapi"
 )
 
 func startRepl(cliConfig *config) {
@@ -72,7 +74,8 @@ func getCommands() map[string]cliCommand {
 }
 
 type config struct {
-	registry    map[string]cliCommand
-	nextURL     *string
-	previousURL *string
+	registry      map[string]cliCommand
+	pokeapiClient pokeapi.Client
+	nextURL       *string
+	previousURL   *string
 }
