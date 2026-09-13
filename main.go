@@ -11,6 +11,7 @@ func main() {
 	cliConfig := &config{
 		registry:      getCommands(),
 		pokeapiClient: pokeclient,
+		caughtPokemon: make(map[string]pokeapi.Pokemon),
 	}
 	startRepl(cliConfig)
 }

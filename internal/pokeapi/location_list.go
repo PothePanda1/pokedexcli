@@ -6,14 +6,14 @@ import (
 	"net/http"
 )
 
-type location struct {
+type resourceName struct {
 	Name string `json:"name"`
 }
 
 type page struct {
-	Results  []location `json:"results"`
-	Next     *string    `json:"next"`
-	Previous *string    `json:"previous"`
+	Results  []resourceName `json:"results"`
+	Next     *string        `json:"next"`
+	Previous *string        `json:"previous"`
 }
 
 // ListLocations -
@@ -21,6 +21,17 @@ func (c *Client) ListLocations(pageURL *string) (page, error) {
 	url := "https://pokeapi.co/api/v2/location-area/"
 	if pageURL != nil {
 		url = *pageURL
+	}
+
+	// before doing the whole get request process, we see if we already have it
+	if val, ok := c.cache.Get(url); ok {
+		locationsResp := page{}
+		err := json.Unmarshal(val, &locationsResp)
+		if err != nil {
+			return page{}, err
+		}
+
+		return locationsResp, nil
 	}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -45,5 +56,6 @@ func (c *Client) ListLocations(pageURL *string) (page, error) {
 		return page{}, err
 	}
 
+	c.cache.Add(url, dat) // add it to cache so it can be quickly fetched again
 	return pg, nil
 }

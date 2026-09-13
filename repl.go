@@ -21,9 +21,10 @@ func startRepl(cliConfig *config) {
 		}
 
 		commandName := words[0]
+		restOf := strings.Join(words[1:], "")
 		cmd, exists := cliConfig.registry[commandName] // if cmd present exists = true, cmd is correct value. If cmd doesn't exist then exists = false and cmd is 0 value
 		if exists {                                    // evalulate
-			if err := cmd.callback(cliConfig); err != nil {
+			if err := cmd.callback(cliConfig, restOf); err != nil {
 				fmt.Println(err)
 			}
 			continue // after the command is called, after it returned anything to the console, goes to the next user input  (REPL) next loop after printning
@@ -43,7 +44,7 @@ func cleanInput(text string) []string {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, ...string) error
 }
 
 // This is the registry, the function means we don't have to initialise it and can be used package level scope
@@ -69,6 +70,16 @@ func getCommands() map[string]cliCommand {
 			description: "Displays Previous 20 locations",
 			callback:    commandMapb,
 		},
+		"explore": {
+			name:        "explore <location_name>",
+			description: "Displays all Pokemon in an area",
+			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch <pokemon_name>",
+			description: "Attempt to catch a Pokemon",
+			callback:    commandCatch,
+		},
 	}
 
 }
@@ -78,4 +89,5 @@ type config struct {
 	pokeapiClient pokeapi.Client
 	nextURL       *string
 	previousURL   *string
+	caughtPokemon map[string]pokeapi.Pokemon
 }
