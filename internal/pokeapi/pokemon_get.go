@@ -7,9 +7,32 @@ import (
 	"net/http"
 )
 
+type PokemonType struct {
+	Slot int `json:"slot"`
+	Type struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"type"`
+}
+
+type StatDetail struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
+type PokemonStat struct {
+	BaseStat int        `json:"base_stat"`
+	Effort   int        `json:"effort"`
+	Stat     StatDetail `json:"stat"`
+}
+
 type Pokemon struct { // page is more for batch results tbh
-	Name    string `json:"name"`
-	BaseExp int    `json:"base_experience"`
+	Name    string        `json:"name"`
+	BaseExp int           `json:"base_experience"`
+	Weight  int           `json:"weight"`
+	Height  int           `json:"height"`
+	Stats   []PokemonStat `json:"stats"`
+	Types   []PokemonType `json:"types"`
 }
 
 // Similar to location_list.go but retrieves specific area instead of starting from id 0
